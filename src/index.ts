@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 const {Command} = require('commander')
 import * as fs from 'fs'
 import * as os from 'os'
@@ -27,9 +28,9 @@ const getCliArgs = (version: string): Record<string, string> => {
     program
         .version(version)
         .description('A CLI for managing a glossary of terms')
-        .option('-g, --get [term]', 'Get value of an existing term')
-        .option('-a, --add [term]', 'Add a new term')
-        .option('-v, --value [term]', 'Optionally add a value for a new term, will prompt if not provided')
+        .option('-g, --get <term>', 'Get value of an existing term')
+        .option('-a, --add <term>', 'Add a new term')
+        .option('-v, --value <term>', 'Optionally add a value for a new term, will prompt if not provided')
         .option('--all', 'See the full glossary of terms and values alphabetically sorted')
         .parse(process.argv)
 
@@ -74,23 +75,22 @@ const addTerm = async (
     value: string | undefined = undefined,
     termsFilePath: string = termsPath,
 ): Promise<void> => {
-    console.log(term, value)
     const termsJson = JSON.parse(readOrCreateTermsFile(termsFilePath))
     if (value === undefined) {
         process.stdout.write(`Enter value for ${term}: `)
         process.stdin.setEncoding('utf8')
-        process.stdin.on('data', (input) => {
-            const inputValue = input.toString().trim()
+
+        const onInput = (input: string) => {
+            const inputValue = input.trim()
             termsJson[term] = inputValue
             writeJsonFile(termsJson)
-            console.log(termsJson)
             process.exit()
-        })
+        }
+        process.stdin.once('data', onInput)
     } else {
         termsJson[term] = value
         writeJsonFile(termsJson, termsFilePath)
     }
-
 }
 
 
@@ -103,10 +103,13 @@ const getTerm = (term: string, termsFilePath: string = termsPath): string => {
     return termsJson[term]
 }
 
+
 /*
 * Shows all terms defined in ~/.terms.json, sorted alphabetically by key
 */
-const showAllTerms = (termsFilePath: string = termsPath): Record<string, string> => {
+const showAllTerms = (
+    termsFilePath: string = termsPath,
+): Record<string, string> => {
     const termsJson = JSON.parse(readOrCreateTermsFile(termsFilePath))
     const sortedObject: Record<string, any> = {};
     Object.keys(termsJson)
@@ -125,7 +128,6 @@ const main = (): void => {
     if ('all' in options) {
         showAllTerms()
     } else if ('add' in options) {
-        console.log(options.add, options.value)
         addTerm(options.add, options.value)
     } else if ('get' in options) {
         getTerm(options.get)

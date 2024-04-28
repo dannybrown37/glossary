@@ -1,5 +1,5 @@
 import fs from 'fs'
-import indexModule from '../src/index'
+import indexModule from './index'
 
 
 describe('Getting the version', () => {

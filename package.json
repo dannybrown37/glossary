@@ -19,10 +19,10 @@
     "typescript": "^5.4.5"
   },
   "dependencies": {
+    "-": "^0.0.1",
     "commander": "^12.0.0"
   },
   "bin": {
-    "glossary": "./dist/index.js",
-    "gls": "./dist/index.js"
+    "glossary": "./dist/index.js"
   }
 }
